@@ -42,6 +42,14 @@
        }
     }
     
+    function onSubmit() {
+      for(i=2;i<=players;i++) {
+        $('input[name=gamemin'+i+']').attr('disabled', false);
+        $('input[name=turnsec'+i+']').attr('disabled', false);
+      }         
+      return true;      
+    }
+    
     $(document).ready(function(){
       for(i=1;i<=players;i++) {
         $("#setupBody").append("<tr><td><input name='name"+i+"' type='text' size='20'/ value='Player "+i+"'></td><td><input name='gamemin"+i+"' type='text' size='5'/></td><td><input name='turnsec"+i+"' type='text' size='5'/></td></tr>");
@@ -50,13 +58,14 @@
       $('input[name=separate]').change(onSeparate)
       $('input[name=gamemin1]').keyup(function(){changeTime('gamemin');})
       $('input[name=turnsec1]').keyup(function(){changeTime('turnsec');})
+      $('input[name=players]').val(players)
     });      
     </script>
     <link rel="stylesheet" type="text/css" href="timer.css" />
   </head>
   <body>
     <div id="setup">
-      <form method="get" action="timer3.html">
+      <form  method="get" action="timer3.html" onsubmit="return onSubmit();">
       <table>
         <thead>
           <tr><td>Player Name</td><td>Mins per game</td><td>Secs per turn</td></tr>
@@ -64,7 +73,8 @@
         <tbody id="setupBody">
         </tbody>
       </table>
-      <input type="checkbox" name="bank" value=false/> Bank extra turn time.  <input type="checkbox" name="separate" value="false"/> Separate timings.
+      <input type="checkbox" name="bank" value="true"/> Bank extra turn time.  <input type="checkbox" name="separate" value="true"/> Separate timings.
+      <input type="hidden" name="players" value="">
         <div><input type="submit" value="go"></div>
       </form>
     </div>

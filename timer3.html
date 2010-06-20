@@ -5,51 +5,119 @@
     <script type="text/javascript" src="jquery.js"></script>
 
     <script type="text/javascript">
-    function updateClock ( )
-    {
-      var currentTime = new Date ( );
+    var urlParams = {};
+    (function () {
+        var e,
+            q = window.location.search.substring(1),
+            r = /([^&=]+)=([^&]+)/g;
 
-      var currentHours = currentTime.getHours ( );
-      var currentMinutes = currentTime.getMinutes ( );
-      var currentSeconds = currentTime.getSeconds ( );
-
-      // Pad the minutes and seconds with leading zeros, if required
-      currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
-      currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
-
-      // Choose either "AM" or "PM" as appropriate
-      var timeOfDay = ( currentHours < 12 ) ? "AM" : "PM";
-
-      // Convert the hours component to 12-hour format if needed
-      currentHours = ( currentHours > 12 ) ? currentHours - 12 : currentHours;
-
-      // Convert an hours component of "0" to "12"
-      currentHours = ( currentHours == 0 ) ? 12 : currentHours;
-
-      // Compose the string for display
-      var currentTimeString = currentHours + ":" + currentMinutes + ":" + currentSeconds + " " + timeOfDay;
-
-      // Update the time display
-      document.getElementById("clock").firstChild.nodeValue = currentTimeString;
+        while (e = r.exec(q))
+           urlParams[decodeURIComponent(e[1])] = decodeURIComponent(e[2].replace(/\+/g, '%20'));
+    })();
+    
+    var players = urlParams["players"]
+    var bankTime = urlParams["bank"]=="true"
+    var timeLeft = {};
+    var currentPlayer = players;
+    var paused = true;
+    var extraSecs = 0;
+    var turnStart = null;
+    
+    function prettyTime(mins, secs) {
+       if (mins == 0) return secs;
+       secs = (secs < 10 ? "0" : "") + secs;
+       return mins + ":" + secs;
+    }
+    
+    function prettySecs(secs) {
+      var mul = 1;
+      if (secs < 0) {
+        secs = -secs;
+        mul = -1;
+      } 
+      mins = Math.floor(secs/60);
+      if (mins == 0) return mul * secs;
+      return prettyTime(mul * mins, secs % 60);
+    }
+    
+    function totalTurnTime() {
+      return urlParams["turnsec" + currentPlayer];
     }
 
-    $(document).ready(function(){
-      for(i=1;i<=4;i++) {
-        $("#setup").append("Player " + i + "<br>");
+    function usedTurnTime() {
+       return extraSecs + (paused ? 0 : Math.floor(((new Date()).getTime() - turnStart) / 1000));
+    }
+    
+    function remainingTurnTime() {
+      return totalTurnTime() - usedTurnTime();
+    }
+    
+    function usedGameTime() {
+      if (bankTime) {
+        return usedTurnTime();
+      } else {
+        var rt = remainingTurnTime();
+        if (rt >= 0) return 0;
+        return -rt; 
+      }      
+    }
+    
+    function updateClock ( )
+    {
+      for(i=1;i<=players;i++) {
+        $("#player"+i).toggleClass("currentPlayer", currentPlayer == i);
+        $("#timeleft"+i).text(prettySecs(timeLeft[i] - ((currentPlayer == i) ? usedGameTime() : 0)));        
+      }      
+      $('#turn').text(prettySecs(remainingTurnTime()))
+    }
+    
+    function startTurn() {
+      turnStart = (new Date()).getTime();  
+    }
+    
+    function onStart() {
+      if (paused) {
+        paused = false;   
+        $("#start").attr("value", "Pause");     
+        startTurn();        
+      } else {
+        extraSecs = usedTurnTime();
+        paused = true;
+        $("#start").attr("value", "Start");     
       }
+    }
+
+    function restartTurn() {
+      extraSecs = 0;
+      startTurn();      
+    }
+    
+    function nextTurn() {
+       timeLeft[currentPlayer] -= usedGameTime();
+       currentPlayer = (currentPlayer % players) + 1;
+       if (bankTime) timeLeft[currentPlayer] += parseInt(totalTurnTime());
+       restartTurn();
+    }
+    
+
+    $(document).ready(function(){
+      for(i=1;i<=players;i++) {
+        $("#players").append("<div id='player"+i+"'><span class='playername' id='name"+i+"'>"+urlParams["name"+i]+":</span> <span class='playertime' id='timeleft"+i+"'></span></div>");
+        timeLeft[i] = urlParams["gamemin" + i] * 60;
+      }
+      nextTurn();
+      setInterval('updateClock()', 100 )
     });      
     </script>
     <link rel="stylesheet" type="text/css" href="timer.css" />
   </head>
-  <body onload="updateClock(); setInterval('updateClock()', 1000 )">
-    <a href="http://jquery.com/">jQuery</a>
-    <span id="clock">&nbsp;</span><br>
-    <div id="setup">
-      <table>
-        <tr class="theader"><td>Player Name</td><td>Mins per game</td><td>Secs per turn</td></tr>
-        <tr class="tbody"><td><input name="name1" type="text" size="20"></td><td><input name="gamemin1" type="text" size="5"></td><td><input name="turnsec1" type="text" size="5"></td></tr>
-      </table>
+  <body>
+    <div id="outer">
+    <div id="clock">
+      <span id="players" ></span>
+      <span id="turn" >11</span>
     </div>
-    <div id="setup"></div>
+    <div id="controls"><input type="submit" id="start" value="Start" onclick="onStart()"> <input type="submit" value="Next Turn" onclick="nextTurn()"> <input type="submit" value="Restart Turn" onclick="restartTurn()"></div>
+    </outer>
   </body>
 </html>
