@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <script type="text/javascript" src="jquery.js"></script>
+
+    <script type="text/javascript">
+    function updateClock ( )
+    {
+      var currentTime = new Date ( );
+
+      var currentHours = currentTime.getHours ( );
+      var currentMinutes = currentTime.getMinutes ( );
+      var currentSeconds = currentTime.getSeconds ( );
+
+      // Pad the minutes and seconds with leading zeros, if required
+      currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+      currentSeconds = ( currentSeconds < 10 ? "0" : "" ) + currentSeconds;
+
+      // Choose either "AM" or "PM" as appropriate
+      var timeOfDay = ( currentHours < 12 ) ? "AM" : "PM";
+
+      // Convert the hours component to 12-hour format if needed
+      currentHours = ( currentHours > 12 ) ? currentHours - 12 : currentHours;
+
+      // Convert an hours component of "0" to "12"
+      currentHours = ( currentHours == 0 ) ? 12 : currentHours;
+
+      // Compose the string for display
+      var currentTimeString = currentHours + ":" + currentMinutes + ":" + currentSeconds + " " + timeOfDay;
+
+      // Update the time display
+      document.getElementById("clock").firstChild.nodeValue = currentTimeString;
+    }
+
+    $(document).ready(function(){
+      for(i=1;i<=4;i++) {
+        $("#setup").append("Player " + i + "<br>");
+      }
+    });      
+    </script>
+    <link rel="stylesheet" type="text/css" href="timer.css" />
+  </head>
+  <body onload="updateClock(); setInterval('updateClock()', 1000 )">
+    <a href="http://jquery.com/">jQuery</a>
+    <span id="clock">&nbsp;</span><br>
+    <div id="setup">
+      <table>
+        <tr class="theader"><td>Player Name</td><td>Mins per game</td><td>Secs per turn</td></tr>
+        <tr class="tbody"><td><input name="name1" type="text" size="20"></td><td><input name="gamemin1" type="text" size="5"></td><td><input name="turnsec1" type="text" size="5"></td></tr>
+      </table>
+    </div>
+    <div id="setup"></div>
+  </body>
+</html>

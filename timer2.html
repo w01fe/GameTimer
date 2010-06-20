@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+  <head>
+    <script type="text/javascript" src="jquery.js"></script>
+
+    <script type="text/javascript">
+    var urlParams = {};
+    (function () {
+        var e,
+            q = window.location.search.substring(1),
+            r = /([^&=]+)=([^&]+)/g;
+
+        while (e = r.exec(q))
+           urlParams[decodeURIComponent(e[1])] = decodeURIComponent(e[2]);
+    })();
+    
+    players = urlParams['players'];
+    separate = false;
+        
+    function changeTime(base) {
+      if (!separate) {
+        val = $('input[name='+base+'1]').attr('value');
+        for(i=2;i<=players;i++) {
+          $('input[name='+base+i+']').attr('value', val);
+        }                 
+      }
+    }    
+        
+    function onSeparate() {
+       separate = $('input[name=separate]').attr('checked')
+       if(separate) {
+         for(i=2;i<=players;i++) {
+           $('input[name=gamemin'+i+']').attr('disabled', false);
+           $('input[name=turnsec'+i+']').attr('disabled', false);
+         }         
+       } else {
+         for(i=2;i<=players;i++) {
+           $('input[name=gamemin'+i+']').attr('disabled', true);
+           $('input[name=turnsec'+i+']').attr('disabled', true);
+         }         
+       }
+    }
+    
+    $(document).ready(function(){
+      for(i=1;i<=players;i++) {
+        $("#setupBody").append("<tr><td><input name='name"+i+"' type='text' size='20'/ value='Player "+i+"'></td><td><input name='gamemin"+i+"' type='text' size='5'/></td><td><input name='turnsec"+i+"' type='text' size='5'/></td></tr>");
+      }
+      onSeparate();
+      $('input[name=separate]').change(onSeparate)
+      $('input[name=gamemin1]').keyup(function(){changeTime('gamemin');})
+      $('input[name=turnsec1]').keyup(function(){changeTime('turnsec');})
+    });      
+    </script>
+    <link rel="stylesheet" type="text/css" href="timer.css" />
+  </head>
+  <body>
+    <div id="setup">
+      <form method="get" action="timer3.html">
+      <table>
+        <thead>
+          <tr><td>Player Name</td><td>Mins per game</td><td>Secs per turn</td></tr>
+        </thead>
+        <tbody id="setupBody">
+        </tbody>
+      </table>
+      <input type="checkbox" name="bank" value=false/> Bank extra turn time.  <input type="checkbox" name="separate" value="false"/> Separate timings.
+        <div><input type="submit" value="go"></div>
+      </form>
+    </div>
+  </body>
+</html>
