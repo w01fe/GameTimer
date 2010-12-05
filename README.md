@@ -5,3 +5,5 @@ This is a simple jQuery-based, multiplayer game clock implementing "simple delay
 
 [wiki]: http://en.wikipedia.org/wiki/Game_clock
 [demo]: http://w01fe.com/gametimer/timer.html
+
+I hereby release this code into the public domain.
